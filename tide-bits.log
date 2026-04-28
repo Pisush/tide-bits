@@ -1,0 +1,330 @@
+2026/03/15 12:42:23 Quantum Tide — watch mode (every 6h0m0s)
+2026/03/15 12:42:23 ========================================
+2026/03/15 12:42:23 Broadcaster: ready (no subscribers)
+2026/03/15 12:42:23 Scout: authenticating with IBM Cloud IAM...
+2026/03/15 12:42:23 Scout: authenticated successfully
+2026/03/15 12:42:23 Scout: fetching ibm_kyoto calibration data...
+2026/03/15 12:42:24 Scout: attempt 1 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"910906d5-fdd9-4fa4-92a2-f2d5db08c21f"}
+2026/03/15 12:42:24 Scout: retrying in 2s (attempt 2/3)...
+2026/03/15 12:42:26 Scout: attempt 2 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"8e6e1c77-3739-4387-a956-8ed47bb34735"}
+2026/03/15 12:42:26 Scout: retrying in 4s (attempt 3/3)...
+2026/03/15 12:42:30 Scout: attempt 3 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"9259a752-de8b-4046-ab5b-0cffbb21fb59"}
+2026/03/15 12:42:30 Scout: fetch failed: all 3 attempts failed, last error: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"9259a752-de8b-4046-ab5b-0cffbb21fb59"}
+2026/03/15 12:42:30 Scribe: no data received from Scout
+2026/03/15 12:42:30 Cartographer: no heatmap request received
+2026/03/15 12:42:30 Pipeline finished with errors — check logs above
+2026/03/15 12:46:26 Quantum Tide — watch mode (every 6h0m0s)
+2026/03/15 12:46:26 ========================================
+2026/03/15 12:46:26 Broadcaster: ready (no subscribers)
+2026/03/15 12:46:26 Scout: authenticating with IBM Cloud IAM...
+2026/03/15 12:46:27 Scout: authenticated successfully
+2026/03/15 12:46:27 Scout: fetching ibm_kyoto calibration data...
+2026/03/15 12:46:27 Scout: received data for ibm_torino (version 1.0.108), 133 qubits
+2026/03/15 12:46:27 Scout: extracted 133 qubit reports
+2026/03/15 12:46:27 Scout: data sent to Scribe
+2026/03/15 12:46:27 Scribe: saved raw calibration data → quantum_weather_data/2026-03-15.json (451169 bytes)
+2026/03/15 12:46:27 Scribe: saved qubit summary → quantum_weather_data/2026-03-15_summary.json (133 qubits)
+2026/03/15 12:46:27 Scribe: heatmap request sent to Cartographer
+2026/03/15 12:46:27 Cartographer: rendering heatmap for 2026-03-15 (133 qubits)
+2026/03/15 12:46:27 Cartographer: heatmap saved → output/torino_spatial_map.png
+2026/03/15 12:46:27 Pipeline complete!
+2026/03/15 12:46:27   Data:    ./quantum_weather_data/
+2026/03/15 12:46:27   Heatmap: ./output/kyoto_spatial_map.png
+2026/03/15 12:50:55 Quantum Tide — watch mode (every 6h0m0s)
+2026/03/15 12:50:55 ========================================
+2026/03/15 12:50:55 Broadcaster: ready (no subscribers)
+2026/03/15 12:50:55 Scout: authenticating with IBM Cloud IAM...
+2026/03/15 12:50:55 Scout: authenticated successfully
+2026/03/15 12:50:55 Scout: fetching ibm_torino calibration data...
+2026/03/15 12:50:56 Scout: received data for ibm_torino (version 1.0.108), 133 qubits
+2026/03/15 12:50:56 Scout: extracted 133 qubit reports
+2026/03/15 12:50:56 Scout: data sent to Scribe
+2026/03/15 12:50:56 Scribe: saved raw calibration data → quantum_weather_data/2026-03-15.json (451169 bytes)
+2026/03/15 12:50:56 Scribe: saved qubit summary → quantum_weather_data/2026-03-15_summary.json (133 qubits)
+2026/03/15 12:50:56 Scribe: heatmap request sent to Cartographer
+2026/03/15 12:50:56 Cartographer: rendering heatmap for 2026-03-15 (133 qubits)
+2026/03/15 12:50:56 Cartographer: heatmap saved → output/torino_spatial_map.png
+2026/03/15 12:50:56 Pipeline complete!
+2026/03/15 12:50:56   Data:    ./quantum_weather_data/
+2026/03/15 12:50:56   Heatmap: ./output/torino_spatial_map.png
+2026/03/15 13:36:25 Quantum Tide — watch mode (every 6h0m0s)
+2026/03/15 13:36:25 ========================================
+2026/03/15 13:36:25 Scout: authenticating with IBM Cloud IAM...
+2026/03/15 13:36:27 Scout: authenticated successfully
+2026/03/15 13:36:27 Scout: fetching ibm_torino calibration data...
+2026/03/15 13:36:28 Scout: received data for ibm_torino (version 1.0.108), 133 qubits
+2026/03/15 13:36:28 Scout: extracted 133 qubit reports
+2026/03/15 13:36:28 Scout: data sent to Scribe
+2026/03/15 13:36:28 Scribe: saved raw calibration data → quantum_weather_data/2026-03-15.json (451169 bytes)
+2026/03/15 13:36:28 Scribe: saved qubit summary → quantum_weather_data/2026-03-15_summary.json (133 qubits)
+2026/03/15 13:36:28 Scribe: heatmap request sent to Cartographer
+2026/03/15 13:36:28 Cartographer: rendering heatmap for 2026-03-15 (133 qubits)
+2026/03/15 13:36:28 Cartographer: spatial heatmap saved → output/torino_spatial_map.png
+2026/03/15 13:36:28 Cartographer: drift map saved → output/torino_drift_map.png
+2026/03/15 13:36:28 Cartographer: summary saved → output/torino_summary.md
+2026/03/15 13:36:28 Cartographer: drift summary saved → output/torino_drift_summary.md
+2026/03/15 13:36:28 Cartographer: action list saved → output/torino_action_list.png
+2026/03/15 13:36:28 Cartographer: agent briefing saved → output/torino_daily_briefing.md
+2026/03/15 13:36:28 Broadcaster: HTML report saved → output/daily_report.html
+2026/03/15 13:36:28 Broadcaster: no SMTP credentials configured, skipping email
+2026/03/15 13:36:28 Broadcaster: set SMTP_USER, SMTP_PASS, EMAIL_TO to enable
+2026/03/15 13:36:28 Pipeline complete!
+2026/03/18 04:04:43 Tick at 2026-03-18 04:04:43 — starting pipeline
+2026/03/18 04:04:43 Scout: authenticating with IBM Cloud IAM...
+2026/03/18 04:04:44 Scout: authenticated successfully
+2026/03/18 04:04:44 Scout: fetching ibm_torino calibration data...
+2026/03/18 04:04:45 Scout: received data for ibm_torino (version 1.0.108), 133 qubits
+2026/03/18 04:04:45 Scout: extracted 133 qubit reports
+2026/03/18 04:04:45 Scout: data sent to Scribe
+2026/03/18 04:04:45 Scribe: saved raw calibration data → quantum_weather_data/2026-03-18.json (451668 bytes)
+2026/03/18 04:04:45 Scribe: saved qubit summary → quantum_weather_data/2026-03-18_summary.json (133 qubits)
+2026/03/18 04:04:45 Scribe: heatmap request sent to Cartographer
+2026/03/18 04:04:45 Cartographer: rendering heatmap for 2026-03-18 (133 qubits)
+2026/03/18 04:04:45 Cartographer: spatial heatmap saved → output/torino_spatial_map.png
+2026/03/18 04:04:45 Cartographer: drift map saved → output/torino_drift_map.png
+2026/03/18 04:04:45 Cartographer: summary saved → output/torino_summary.md
+2026/03/18 04:04:45 Cartographer: drift summary saved → output/torino_drift_summary.md
+2026/03/18 04:04:45 Cartographer: action list saved → output/torino_action_list.png
+2026/03/18 04:04:45 Cartographer: agent briefing saved → output/torino_daily_briefing.md
+2026/03/18 04:04:45 Broadcaster: HTML report saved → output/daily_report.html
+2026/03/18 04:04:45 Broadcaster: no SMTP credentials configured, skipping email
+2026/03/18 04:04:45 Broadcaster: set SMTP_USER, SMTP_PASS, EMAIL_TO to enable
+2026/03/18 04:04:45 Pipeline complete!
+2026/03/19 12:08:59 Tick at 2026-03-19 12:08:59 — starting pipeline
+2026/03/19 12:08:59 Scout: authenticating with IBM Cloud IAM...
+2026/03/19 12:09:00 Scout: authenticated successfully
+2026/03/19 12:09:00 Scout: fetching ibm_torino calibration data...
+2026/03/19 12:09:01 Scout: received data for ibm_torino (version 1.0.108), 133 qubits
+2026/03/19 12:09:01 Scout: extracted 133 qubit reports
+2026/03/19 12:09:01 Scout: data sent to Scribe
+2026/03/19 12:09:01 Scribe: saved raw calibration data → quantum_weather_data/2026-03-19.json (451372 bytes)
+2026/03/19 12:09:01 Scribe: saved qubit summary → quantum_weather_data/2026-03-19_summary.json (133 qubits)
+2026/03/19 12:09:01 Scribe: heatmap request sent to Cartographer
+2026/03/19 12:09:01 Cartographer: rendering heatmap for 2026-03-19 (133 qubits)
+2026/03/19 12:09:01 Cartographer: spatial heatmap saved → output/torino_spatial_map.png
+2026/03/19 12:09:01 Cartographer: drift map saved → output/torino_drift_map.png
+2026/03/19 12:09:01 Cartographer: summary saved → output/torino_summary.md
+2026/03/19 12:09:01 Cartographer: drift summary saved → output/torino_drift_summary.md
+2026/03/19 12:09:01 Cartographer: action list saved → output/torino_action_list.png
+2026/03/19 12:09:01 Cartographer: agent briefing saved → output/torino_daily_briefing.md
+2026/03/19 12:09:01 Broadcaster: HTML report saved → output/daily_report.html
+2026/03/19 12:09:01 Broadcaster: no SMTP credentials configured, skipping email
+2026/03/19 12:09:01 Broadcaster: set SMTP_USER, SMTP_PASS, EMAIL_TO to enable
+2026/03/19 12:09:01 Pipeline complete!
+2026/03/20 14:08:55 Quantum Tide — watch mode (every 6h0m0s)
+2026/03/20 14:08:55 ========================================
+2026/03/20 14:08:55 Scout: authenticating with IBM Cloud IAM...
+2026/03/20 14:08:57 Scout: authenticated successfully
+2026/03/20 14:08:57 Scout: fetching ibm_torino calibration data...
+2026/03/20 14:08:58 Scout: received data for ibm_torino (version 1.0.108), 133 qubits
+2026/03/20 14:08:58 Scout: extracted 133 qubit reports
+2026/03/20 14:08:58 Scout: data sent to Scribe
+2026/03/20 14:08:58 Scribe: saved raw calibration data → quantum_weather_data/2026-03-20.json (452488 bytes)
+2026/03/20 14:08:58 Scribe: saved qubit summary → quantum_weather_data/2026-03-20_summary.json (133 qubits)
+2026/03/20 14:08:58 Scribe: heatmap request sent to Cartographer
+2026/03/20 14:08:58 Cartographer: rendering heatmap for 2026-03-20 (133 qubits)
+2026/03/20 14:08:59 Cartographer: spatial heatmap saved → output/torino_spatial_map.png
+2026/03/20 14:08:59 Cartographer: drift map saved → output/torino_drift_map.png
+2026/03/20 14:08:59 Cartographer: summary saved → output/torino_summary.md
+2026/03/20 14:08:59 Cartographer: drift summary saved → output/torino_drift_summary.md
+2026/03/20 14:08:59 Cartographer: action list saved → output/torino_action_list.png
+2026/03/20 14:08:59 Cartographer: agent briefing saved → output/torino_daily_briefing.md
+2026/03/20 14:08:59 Broadcaster: HTML report saved → output/daily_report.html
+2026/03/20 14:08:59 Broadcaster: no SMTP credentials configured, skipping email
+2026/03/20 14:08:59 Broadcaster: set SMTP_USER, SMTP_PASS, EMAIL_TO to enable
+2026/03/20 14:08:59 Pipeline complete!
+2026/03/24 16:18:05 Tick at 2026-03-24 16:18:05 — starting pipeline
+2026/03/24 16:18:05 Scout: authenticating with IBM Cloud IAM...
+2026/03/24 16:18:06 Scout: authenticated successfully
+2026/03/24 16:18:06 Scout: fetching ibm_torino calibration data...
+2026/03/24 16:18:07 Scout: received data for ibm_torino (version 1.0.108), 133 qubits
+2026/03/24 16:18:07 Scout: extracted 133 qubit reports
+2026/03/24 16:18:07 Scout: data sent to Scribe
+2026/03/24 16:18:07 Scribe: saved raw calibration data → quantum_weather_data/2026-03-24.json (452015 bytes)
+2026/03/24 16:18:07 Scribe: saved qubit summary → quantum_weather_data/2026-03-24_summary.json (133 qubits)
+2026/03/24 16:18:07 Scribe: heatmap request sent to Cartographer
+2026/03/24 16:18:07 Cartographer: rendering heatmap for 2026-03-24 (133 qubits)
+2026/03/24 16:18:07 Cartographer: spatial heatmap saved → output/torino_spatial_map.png
+2026/03/24 16:18:07 Cartographer: drift map saved → output/torino_drift_map.png
+2026/03/24 16:18:07 Cartographer: summary saved → output/torino_summary.md
+2026/03/24 16:18:07 Cartographer: drift summary saved → output/torino_drift_summary.md
+2026/03/24 16:18:07 Cartographer: action list saved → output/torino_action_list.png
+2026/03/24 16:18:07 Cartographer: agent briefing saved → output/torino_daily_briefing.md
+2026/03/24 16:18:07 Broadcaster: HTML report saved → output/daily_report.html
+2026/03/24 16:18:07 Broadcaster: no SMTP credentials configured, skipping email
+2026/03/24 16:18:07 Broadcaster: set SMTP_USER, SMTP_PASS, EMAIL_TO to enable
+2026/03/24 16:18:07 Pipeline complete!
+2026/03/26 14:56:26 Tick at 2026-03-26 14:56:26 — starting pipeline
+2026/03/26 14:56:26 Scout: authenticating with IBM Cloud IAM...
+2026/03/26 14:56:28 Scout: authenticated successfully
+2026/03/26 14:56:28 Scout: fetching ibm_torino calibration data...
+2026/03/26 14:56:29 Scout: received data for ibm_torino (version 1.0.108), 133 qubits
+2026/03/26 14:56:29 Scout: extracted 133 qubit reports
+2026/03/26 14:56:29 Scout: data sent to Scribe
+2026/03/26 14:56:29 Scribe: saved raw calibration data → quantum_weather_data/2026-03-26.json (451762 bytes)
+2026/03/26 14:56:29 Scribe: saved qubit summary → quantum_weather_data/2026-03-26_summary.json (133 qubits)
+2026/03/26 14:56:29 Scribe: heatmap request sent to Cartographer
+2026/03/26 14:56:29 Cartographer: rendering heatmap for 2026-03-26 (133 qubits)
+2026/03/26 14:56:30 Cartographer: spatial heatmap saved → output/torino_spatial_map.png
+2026/03/26 14:56:30 Cartographer: drift map saved → output/torino_drift_map.png
+2026/03/26 14:56:30 Cartographer: summary saved → output/torino_summary.md
+2026/03/26 14:56:30 Cartographer: drift summary saved → output/torino_drift_summary.md
+2026/03/26 14:56:30 Cartographer: action list saved → output/torino_action_list.png
+2026/03/26 14:56:30 Cartographer: agent briefing saved → output/torino_daily_briefing.md
+2026/03/26 14:56:30 Broadcaster: HTML report saved → output/daily_report.html
+2026/03/26 14:56:30 Broadcaster: no SMTP credentials configured, skipping email
+2026/03/26 14:56:30 Broadcaster: set SMTP_USER, SMTP_PASS, EMAIL_TO to enable
+2026/03/26 14:56:30 Pipeline complete!
+2026/03/30 13:16:53 Tick at 2026-03-30 13:16:53 — starting pipeline
+2026/03/30 13:16:53 Scout: authenticating with IBM Cloud IAM...
+2026/03/30 13:16:54 Scout: authenticated successfully
+2026/03/30 13:16:54 Scout: fetching ibm_torino calibration data...
+2026/03/30 13:16:55 Scout: received data for ibm_torino (version 1.0.108), 133 qubits
+2026/03/30 13:16:55 Scout: extracted 133 qubit reports
+2026/03/30 13:16:55 Scout: data sent to Scribe
+2026/03/30 13:16:55 Scribe: saved raw calibration data → quantum_weather_data/2026-03-30.json (452007 bytes)
+2026/03/30 13:16:55 Scribe: saved qubit summary → quantum_weather_data/2026-03-30_summary.json (133 qubits)
+2026/03/30 13:16:55 Scribe: heatmap request sent to Cartographer
+2026/03/30 13:16:55 Cartographer: rendering heatmap for 2026-03-30 (133 qubits)
+2026/03/30 13:16:55 Cartographer: spatial heatmap saved → output/torino_spatial_map.png
+2026/03/30 13:16:55 Cartographer: drift map saved → output/torino_drift_map.png
+2026/03/30 13:16:55 Cartographer: summary saved → output/torino_summary.md
+2026/03/30 13:16:55 Cartographer: drift summary saved → output/torino_drift_summary.md
+2026/03/30 13:16:55 Cartographer: action list saved → output/torino_action_list.png
+2026/03/30 13:16:55 Cartographer: agent briefing saved → output/torino_daily_briefing.md
+2026/03/30 13:16:55 Broadcaster: HTML report saved → output/daily_report.html
+2026/03/30 13:16:55 Broadcaster: no SMTP credentials configured, skipping email
+2026/03/30 13:16:55 Broadcaster: set SMTP_USER, SMTP_PASS, EMAIL_TO to enable
+2026/03/30 13:16:55 Pipeline complete!
+2026/03/31 23:35:21 Tick at 2026-03-31 23:35:21 — starting pipeline
+2026/03/31 23:35:21 Scout: authenticating with IBM Cloud IAM...
+2026/03/31 23:35:22 Scout: authenticated successfully
+2026/03/31 23:35:22 Scout: fetching ibm_torino calibration data...
+2026/03/31 23:35:23 Scout: received data for ibm_torino (version 1.0.108), 133 qubits
+2026/03/31 23:35:23 Scout: extracted 133 qubit reports
+2026/03/31 23:35:23 Scout: data sent to Scribe
+2026/03/31 23:35:23 Scribe: saved raw calibration data → quantum_weather_data/2026-03-31.json (451605 bytes)
+2026/03/31 23:35:23 Scribe: saved qubit summary → quantum_weather_data/2026-03-31_summary.json (133 qubits)
+2026/03/31 23:35:23 Scribe: heatmap request sent to Cartographer
+2026/03/31 23:35:23 Cartographer: rendering heatmap for 2026-03-31 (133 qubits)
+2026/03/31 23:35:23 Cartographer: spatial heatmap saved → output/torino_spatial_map.png
+2026/03/31 23:35:23 Cartographer: drift map saved → output/torino_drift_map.png
+2026/03/31 23:35:23 Cartographer: summary saved → output/torino_summary.md
+2026/03/31 23:35:23 Cartographer: drift summary saved → output/torino_drift_summary.md
+2026/03/31 23:35:23 Cartographer: action list saved → output/torino_action_list.png
+2026/03/31 23:35:23 Cartographer: agent briefing saved → output/torino_daily_briefing.md
+2026/03/31 23:35:23 Broadcaster: HTML report saved → output/daily_report.html
+2026/03/31 23:35:23 Broadcaster: no SMTP credentials configured, skipping email
+2026/03/31 23:35:23 Broadcaster: set SMTP_USER, SMTP_PASS, EMAIL_TO to enable
+2026/03/31 23:35:23 Pipeline complete!
+2026/04/05 04:49:34 Tick at 2026-04-05 04:49:34 — starting pipeline
+2026/04/05 04:49:34 Scout: authenticating with IBM Cloud IAM...
+2026/04/05 04:49:36 Scout: authenticated successfully
+2026/04/05 04:49:36 Scout: fetching ibm_torino calibration data...
+2026/04/05 04:49:37 Scout: attempt 1 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"ab536d9a-930c-45e6-8e2e-0e8316fc65bd"}
+2026/04/05 04:49:37 Scout: retrying in 2s (attempt 2/3)...
+2026/04/05 04:49:39 Scout: attempt 2 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"bb9ae9e9-0f2f-40b0-9321-6bded996bd3f"}
+2026/04/05 04:49:39 Scout: retrying in 4s (attempt 3/3)...
+2026/04/05 04:49:43 Scout: attempt 3 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"eba3d2cf-637d-4332-9a77-876e44c27f46"}
+2026/04/05 04:49:43 Scout: fetch failed: all 3 attempts failed, last error: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"eba3d2cf-637d-4332-9a77-876e44c27f46"}
+2026/04/05 04:49:43 Scribe: no data received from Scout
+2026/04/05 04:49:43 Cartographer: no heatmap request received
+2026/04/05 04:49:43 Broadcaster: no summary data for 2026-04-05, skipping
+2026/04/05 04:49:43 Pipeline complete!
+2026/04/08 15:27:52 Tick at 2026-04-08 15:27:52 — starting pipeline
+2026/04/08 15:27:52 Scout: authenticating with IBM Cloud IAM...
+2026/04/08 15:27:53 Scout: authenticated successfully
+2026/04/08 15:27:53 Scout: fetching ibm_torino calibration data...
+2026/04/08 15:27:53 Scout: attempt 1 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"8ac49290-83b4-490a-83cd-44a427f63b0c"}
+2026/04/08 15:27:53 Scout: retrying in 2s (attempt 2/3)...
+2026/04/08 15:27:56 Scout: attempt 2 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"ac74257f-a405-459c-86f2-f612f9a944cc"}
+2026/04/08 15:27:56 Scout: retrying in 4s (attempt 3/3)...
+2026/04/08 15:28:00 Scout: attempt 3 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"2cea7987-2635-4ee7-b06f-7dc02dbc477d"}
+2026/04/08 15:28:00 Scout: fetch failed: all 3 attempts failed, last error: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"2cea7987-2635-4ee7-b06f-7dc02dbc477d"}
+2026/04/08 15:28:00 Scribe: no data received from Scout
+2026/04/08 15:28:00 Cartographer: no heatmap request received
+2026/04/08 15:28:00 Broadcaster: no summary data for 2026-04-08, skipping
+2026/04/08 15:28:00 Pipeline complete!
+2026/04/10 14:49:59 Tick at 2026-04-10 14:49:59 — starting pipeline
+2026/04/10 14:49:59 Scout: authenticating with IBM Cloud IAM...
+2026/04/10 14:50:00 Scout: authenticated successfully
+2026/04/10 14:50:00 Scout: fetching ibm_torino calibration data...
+2026/04/10 14:50:01 Scout: attempt 1 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"0bd14fa7-b901-4846-9cd3-a210cf65a4bb"}
+2026/04/10 14:50:01 Scout: retrying in 2s (attempt 2/3)...
+2026/04/10 14:50:04 Scout: attempt 2 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"9a15e88b-e5fd-42c6-9e62-4d243575b99b"}
+2026/04/10 14:50:04 Scout: retrying in 4s (attempt 3/3)...
+2026/04/10 14:50:08 Scout: attempt 3 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"87e153f8-28b8-4a87-8660-3b6a56f0ecdd"}
+2026/04/10 14:50:08 Scout: fetch failed: all 3 attempts failed, last error: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"87e153f8-28b8-4a87-8660-3b6a56f0ecdd"}
+2026/04/10 14:50:08 Scribe: no data received from Scout
+2026/04/10 14:50:08 Cartographer: no heatmap request received
+2026/04/10 14:50:08 Broadcaster: no summary data for 2026-04-10, skipping
+2026/04/10 14:50:08 Pipeline complete!
+2026/04/13 13:29:47 Quantum Tide — watch mode (every 6h0m0s)
+2026/04/13 13:29:47 ========================================
+2026/04/13 13:29:47 Scout: authenticating with IBM Cloud IAM...
+2026/04/13 13:30:17 Scout: attempt 1 failed: IAM request failed: Post "https://iam.cloud.ibm.com/identity/token": dial tcp: lookup iam.cloud.ibm.com: i/o timeout
+2026/04/13 13:30:17 Scout: retrying in 2s (attempt 2/3)...
+2026/04/13 13:30:49 Scout: attempt 2 failed: IAM request failed: Post "https://iam.cloud.ibm.com/identity/token": dial tcp: lookup iam.cloud.ibm.com: i/o timeout
+2026/04/13 13:30:49 Scout: retrying in 4s (attempt 3/3)...
+2026/04/13 13:31:23 Scout: attempt 3 failed: IAM request failed: Post "https://iam.cloud.ibm.com/identity/token": dial tcp: lookup iam.cloud.ibm.com: i/o timeout
+2026/04/13 13:31:23 Scout: authentication failed: all 3 attempts failed, last error: IAM request failed: Post "https://iam.cloud.ibm.com/identity/token": dial tcp: lookup iam.cloud.ibm.com: i/o timeout
+2026/04/13 13:31:23 Scribe: no data received from Scout
+2026/04/13 13:31:23 Cartographer: no heatmap request received
+2026/04/13 13:31:23 Broadcaster: no summary data for 2026-04-13, skipping
+2026/04/13 13:31:23 Pipeline complete!
+2026/04/15 15:09:09 Tick at 2026-04-15 15:09:09 — starting pipeline
+2026/04/15 15:09:09 Scout: authenticating with IBM Cloud IAM...
+2026/04/15 15:09:11 Scout: authenticated successfully
+2026/04/15 15:09:11 Scout: fetching ibm_torino calibration data...
+2026/04/15 15:09:12 Scout: attempt 1 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"72374883-523a-4c77-b88b-131a6d146fa9"}
+2026/04/15 15:09:12 Scout: retrying in 2s (attempt 2/3)...
+2026/04/15 15:09:14 Scout: attempt 2 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"ab8d04c3-6c42-43da-9391-0f9d474347cd"}
+2026/04/15 15:09:14 Scout: retrying in 4s (attempt 3/3)...
+2026/04/15 15:09:18 Scout: attempt 3 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"166eca95-1e8a-4a44-849e-edbef080b1cf"}
+2026/04/15 15:09:18 Scout: fetch failed: all 3 attempts failed, last error: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"166eca95-1e8a-4a44-849e-edbef080b1cf"}
+2026/04/15 15:09:18 Scribe: no data received from Scout
+2026/04/15 15:09:18 Cartographer: no heatmap request received
+2026/04/15 15:09:18 Broadcaster: no summary data for 2026-04-15, skipping
+2026/04/15 15:09:18 Pipeline complete!
+2026/04/16 13:31:01 Tick at 2026-04-16 13:31:01 — starting pipeline
+2026/04/16 13:31:01 Scout: authenticating with IBM Cloud IAM...
+2026/04/16 13:31:03 Scout: authenticated successfully
+2026/04/16 13:31:03 Scout: fetching ibm_torino calibration data...
+2026/04/16 13:31:03 Scout: attempt 1 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"5abd9fdb-da0d-4e0c-ac21-15c45472305d"}
+2026/04/16 13:31:03 Scout: retrying in 2s (attempt 2/3)...
+2026/04/16 13:31:05 Scout: attempt 2 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"9549f2ba-a85c-422e-ae9a-062d499fd383"}
+2026/04/16 13:31:05 Scout: retrying in 4s (attempt 3/3)...
+2026/04/16 13:31:09 Scout: attempt 3 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"f743cf52-9b53-441e-bd0f-b53e084f0fd0"}
+2026/04/16 13:31:09 Scout: fetch failed: all 3 attempts failed, last error: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"f743cf52-9b53-441e-bd0f-b53e084f0fd0"}
+2026/04/16 13:31:09 Scribe: no data received from Scout
+2026/04/16 13:31:09 Cartographer: no heatmap request received
+2026/04/16 13:31:09 Broadcaster: no summary data for 2026-04-16, skipping
+2026/04/16 13:31:09 Pipeline complete!
+2026/04/21 11:08:04 Tick at 2026-04-21 11:08:04 — starting pipeline
+2026/04/21 11:08:04 Scout: authenticating with IBM Cloud IAM...
+2026/04/21 11:08:05 Scout: authenticated successfully
+2026/04/21 11:08:05 Scout: fetching ibm_torino calibration data...
+2026/04/21 11:08:07 Scout: attempt 1 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"f0df8a8d-7656-4d1a-8611-19a7a77e9e9a"}
+2026/04/21 11:08:07 Scout: retrying in 2s (attempt 2/3)...
+2026/04/21 11:08:09 Scout: attempt 2 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"22e9f8d2-9a36-472a-aea1-9ce65bcc4c71"}
+2026/04/21 11:08:09 Scout: retrying in 4s (attempt 3/3)...
+2026/04/21 11:08:14 Scout: attempt 3 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"021e8ed2-3e2a-4e45-aacf-bb38119210af"}
+2026/04/21 11:08:14 Scout: fetch failed: all 3 attempts failed, last error: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"021e8ed2-3e2a-4e45-aacf-bb38119210af"}
+2026/04/21 11:08:14 Scribe: no data received from Scout
+2026/04/21 11:08:14 Cartographer: no heatmap request received
+2026/04/21 11:08:14 Broadcaster: no summary data for 2026-04-21, skipping
+2026/04/21 11:08:14 Pipeline complete!
+2026/04/23 14:12:26 Tick at 2026-04-23 14:12:26 — starting pipeline
+2026/04/23 14:12:26 Scout: authenticating with IBM Cloud IAM...
+2026/04/23 14:12:28 Scout: authenticated successfully
+2026/04/23 14:12:28 Scout: fetching ibm_torino calibration data...
+2026/04/23 14:12:28 Scout: attempt 1 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"089a6ba3-2801-4294-b3fc-ee2ea7b90974"}
+2026/04/23 14:12:28 Scout: retrying in 2s (attempt 2/3)...
+2026/04/23 14:12:31 Scout: attempt 2 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"356132bf-03b6-40f5-bb8e-eadc3e7e1aac"}
+2026/04/23 14:12:31 Scout: retrying in 4s (attempt 3/3)...
+2026/04/23 14:12:35 Scout: attempt 3 failed: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"d0db17cf-2202-4542-bf75-c87c2e807615"}
+2026/04/23 14:12:35 Scout: fetch failed: all 3 attempts failed, last error: properties API returned 404: {"errors":[{"code":"not_found","message":"device not found","more_info":"https://cloud.ibm.com/apidocs/quantum-computing#error-handling"}],"trace":"d0db17cf-2202-4542-bf75-c87c2e807615"}
+2026/04/23 14:12:35 Scribe: no data received from Scout
+2026/04/23 14:12:35 Cartographer: no heatmap request received
+2026/04/23 14:12:35 Broadcaster: no summary data for 2026-04-23, skipping
+2026/04/23 14:12:35 Pipeline complete!
