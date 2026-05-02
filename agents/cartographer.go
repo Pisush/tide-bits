@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/fogleman/gg"
+	"golang.org/x/image/font/basicfont"
 	"github.com/natalie/tide-bits/models"
 )
 
@@ -30,6 +31,11 @@ const (
 	legRight  = 1205.0
 	legTop    = 100.0
 	legBottom = 880.0
+
+	// Readout error thresholds used consistently across all outputs.
+	ThresholdAvoid    = 0.05 // >5%  → AVOID
+	ThresholdUnstable = 0.02 // 2-5% → UNSTABLE
+	// below ThresholdUnstable → BEST REGION
 )
 
 var (
@@ -52,48 +58,45 @@ func Cartographer(in <-chan models.HeatmapRequest) {
 		return
 	}
 
-	// Spatial heatmap
-	spatialPath := filepath.Join("output", "torino_spatial_map.png")
+	p := req.ProviderName
+
+	spatialPath := filepath.Join("output", p+"_spatial_map.png")
 	if err := renderHeatmap(req, spatialPath); err != nil {
 		log.Printf("Cartographer: spatial render failed: %v", err)
 	} else {
 		log.Printf("Cartographer: spatial heatmap saved → %s", spatialPath)
 	}
 
-	// Temporal drift map
-	driftPath := filepath.Join("output", "torino_drift_map.png")
-	if err := renderDriftMap(driftPath); err != nil {
+	driftPath := filepath.Join("output", p+"_drift_map.png")
+	if err := renderDriftMap(p, driftPath); err != nil {
 		log.Printf("Cartographer: drift render failed: %v", err)
 	} else {
 		log.Printf("Cartographer: drift map saved → %s", driftPath)
 	}
 
-	// Machine-readable summaries for agents
-	summaryPath := filepath.Join("output", "torino_summary.md")
+	summaryPath := filepath.Join("output", p+"_summary.md")
 	if err := writeSummary(req, summaryPath); err != nil {
 		log.Printf("Cartographer: summary write failed: %v", err)
 	} else {
 		log.Printf("Cartographer: summary saved → %s", summaryPath)
 	}
 
-	driftSummaryPath := filepath.Join("output", "torino_drift_summary.md")
-	if err := writeDriftSummary(driftSummaryPath); err != nil {
+	driftSummaryPath := filepath.Join("output", p+"_drift_summary.md")
+	if err := writeDriftSummary(p, driftSummaryPath); err != nil {
 		log.Printf("Cartographer: drift summary write failed: %v", err)
 	} else {
 		log.Printf("Cartographer: drift summary saved → %s", driftSummaryPath)
 	}
 
-	// Action list PNG (Do Not Fly)
-	actionPath := filepath.Join("output", "torino_action_list.png")
+	actionPath := filepath.Join("output", p+"_action_list.png")
 	if err := renderActionList(req.Reports, actionPath); err != nil {
 		log.Printf("Cartographer: action list render failed: %v", err)
 	} else {
 		log.Printf("Cartographer: action list saved → %s", actionPath)
 	}
 
-	// Agent daily briefing (single comprehensive file)
-	briefingPath := filepath.Join("output", "torino_daily_briefing.md")
-	if err := writeAgentBriefing(req.Reports, briefingPath); err != nil {
+	briefingPath := filepath.Join("output", p+"_daily_briefing.md")
+	if err := writeAgentBriefing(req, briefingPath); err != nil {
 		log.Printf("Cartographer: agent briefing failed: %v", err)
 	} else {
 		log.Printf("Cartographer: agent briefing saved → %s", briefingPath)
@@ -122,9 +125,9 @@ func renderHeatmap(req models.HeatmapRequest, outPath string) error {
 	// Title
 	loadFont(dc, 20)
 	dc.SetColor(color.RGBA{R: 220, G: 225, B: 235, A: 255})
-	dc.DrawStringAnchored("DAILY QUANTUM TIDE REPORT - SPATIAL HEATMAP (IBM_TORINO)", canvasW/2, 35, 0.5, 0.5)
+	title := fmt.Sprintf("DAILY QUANTUM TIDE REPORT - SPATIAL HEATMAP (%s)", strings.ToUpper(req.ProviderName))
+	dc.DrawStringAnchored(title, canvasW/2, 35, 0.5, 0.5)
 
-	// Timestamp subtitle
 	loadFont(dc, 13)
 	dc.SetColor(color.RGBA{R: 140, G: 145, B: 165, A: 255})
 	ts := time.Now().Format("2006-01-02 15:04 MST")
@@ -141,11 +144,9 @@ func renderHeatmap(req models.HeatmapRequest, outPath string) error {
 		drawHexFlat(dc, pos[0], pos[1], hexSize, errorColorBWR(errorMap[i]))
 	}
 
-	// Qubit index labels inside each hexagon
 	loadFont(dc, 9)
 	for i, pos := range positions {
 		c := errorColorBWR(errorMap[i])
-		// Pick text color based on background luminance
 		lum := 0.299*float64(c.R) + 0.587*float64(c.G) + 0.114*float64(c.B)
 		if lum > 140 {
 			dc.SetColor(color.RGBA{R: 20, G: 20, B: 30, A: 255})
@@ -169,8 +170,9 @@ type daySnapshot struct {
 	reports []models.QubitReport
 }
 
-func loadHistoricalData() []daySnapshot {
-	files, err := filepath.Glob("quantum_weather_data/*_summary.json")
+func loadHistoricalData(providerName string) []daySnapshot {
+	dir := filepath.Join("quantum_weather_data", providerName)
+	files, err := filepath.Glob(filepath.Join(dir, "*_summary.json"))
 	if err != nil || len(files) == 0 {
 		return nil
 	}
@@ -179,9 +181,6 @@ func loadHistoricalData() []daySnapshot {
 	for _, f := range files {
 		base := filepath.Base(f)
 		date := strings.TrimSuffix(base, "_summary.json")
-		if !strings.Contains(base, "_summary") {
-			continue
-		}
 
 		raw, err := os.ReadFile(f)
 		if err != nil {
@@ -198,20 +197,22 @@ func loadHistoricalData() []daySnapshot {
 		return days[i].date < days[j].date
 	})
 
-	// Keep last 7 days
 	if len(days) > 7 {
 		days = days[len(days)-7:]
 	}
 	return days
 }
 
-func renderDriftMap(outPath string) error {
-	days := loadHistoricalData()
+func renderDriftMap(providerName, outPath string) error {
+	days := loadHistoricalData(providerName)
 	if len(days) == 0 {
 		return fmt.Errorf("no historical data found")
 	}
+	if len(days) < 2 {
+		log.Println("Cartographer: skipping drift map (need 2+ days of data)")
+		return nil
+	}
 
-	// Find max qubit count across all days
 	maxQubits := 0
 	for _, d := range days {
 		if len(d.reports) > maxQubits {
@@ -221,11 +222,9 @@ func renderDriftMap(outPath string) error {
 
 	dc := gg.NewContext(canvasW, canvasH)
 
-	// Dark background
 	dc.SetColor(color.RGBA{R: 20, G: 22, B: 30, A: 255})
 	dc.Clear()
 
-	// Grid area
 	gridLeft := 100.0
 	gridTop := 70.0
 	gridRight := 1100.0
@@ -233,18 +232,15 @@ func renderDriftMap(outPath string) error {
 	gridW := gridRight - gridLeft
 	gridH := gridBottom - gridTop
 
-	// White frame
 	dc.SetColor(color.RGBA{R: 240, G: 240, B: 245, A: 255})
 	dc.DrawRoundedRectangle(gridLeft-4, gridTop-4, gridW+8, gridH+8, 6)
 	dc.Fill()
 
-	// Title
 	loadFont(dc, 20)
 	dc.SetColor(color.RGBA{R: 220, G: 225, B: 235, A: 255})
-	title := fmt.Sprintf("TEMPORAL DRIFT HEATMAP (LAST %d DAYS)", len(days))
+	title := fmt.Sprintf("TEMPORAL DRIFT HEATMAP (%s — LAST %d DAYS)", strings.ToUpper(providerName), len(days))
 	dc.DrawStringAnchored(title, canvasW/2, 35, 0.5, 0.5)
 
-	// Draw grid cells
 	colW := gridW / float64(len(days))
 	rowH := gridH / float64(maxQubits)
 
@@ -255,7 +251,6 @@ func renderDriftMap(outPath string) error {
 		}
 		x := gridLeft + float64(col)*colW
 		for q := 0; q < maxQubits; q++ {
-			// Y: qubit 0 at bottom, max at top
 			y := gridBottom - float64(q+1)*rowH
 			c := errorColorBWR(errMap[q])
 			dc.SetColor(c)
@@ -264,13 +259,11 @@ func renderDriftMap(outPath string) error {
 		}
 	}
 
-	// Y-axis labels (Qubit Index)
 	loadFont(dc, 11)
 	dc.SetColor(color.RGBA{R: 195, G: 200, B: 215, A: 255})
 	step := 10
 	if maxQubits > 100 {
 		step = maxQubits / 10
-		// Round to nearest even number
 		if step%2 != 0 {
 			step++
 		}
@@ -278,19 +271,16 @@ func renderDriftMap(outPath string) error {
 	for q := 0; q <= maxQubits; q += step {
 		y := gridBottom - float64(q)*rowH
 		dc.DrawStringAnchored(fmt.Sprintf("%d", q), gridLeft-10, y, 1, 0.5)
-		// Tick
 		dc.DrawLine(gridLeft-4, y, gridLeft, y)
 		dc.Stroke()
 	}
 
-	// Y-axis title
 	loadFont(dc, 14)
 	dc.Push()
 	dc.RotateAbout(math.Pi/2, 30, (gridTop+gridBottom)/2)
 	dc.DrawStringAnchored("Qubit Index", 30, (gridTop+gridBottom)/2, 0.5, 0.5)
 	dc.Pop()
 
-	// X-axis labels (dates / days ago)
 	loadFont(dc, 11)
 	dc.SetColor(color.RGBA{R: 195, G: 200, B: 215, A: 255})
 	today := time.Now().Truncate(24 * time.Hour)
@@ -313,17 +303,11 @@ func renderDriftMap(outPath string) error {
 		dc.DrawStringAnchored(label, x, gridBottom+18, 0.5, 0.5)
 	}
 
-	// X-axis title
 	loadFont(dc, 14)
 	dc.SetColor(color.RGBA{R: 195, G: 200, B: 215, A: 255})
 	dc.DrawStringAnchored("Time (Days Ago)", (gridLeft+gridRight)/2, gridBottom+40, 0.5, 0.5)
 
-	// Legend (reuse same style, positioned to the right)
-	dLegLeft := 1160.0
-	dLegRight := 1205.0
-	dLegTop := 100.0
-	dLegBottom := 880.0
-	drawVerticalLegend(dc, dLegLeft, dLegRight, dLegTop, dLegBottom)
+	drawVerticalLegend(dc, 1160.0, 1205.0, 100.0, 880.0)
 
 	return dc.SavePNG(outPath)
 }
@@ -335,14 +319,12 @@ func renderDriftMap(outPath string) error {
 func writeSummary(req models.HeatmapRequest, outPath string) error {
 	ts := time.Now().Format("2006-01-02 15:04 MST")
 
-	// Sort reports by error descending
 	sorted := make([]models.QubitReport, len(req.Reports))
 	copy(sorted, req.Reports)
 	sort.Slice(sorted, func(i, j int) bool {
 		return sorted[i].ReadoutError > sorted[j].ReadoutError
 	})
 
-	// Compute stats
 	var sum float64
 	worst := sorted[0]
 	best := sorted[len(sorted)-1]
@@ -351,7 +333,6 @@ func writeSummary(req models.HeatmapRequest, outPath string) error {
 	}
 	avg := sum / float64(len(sorted))
 
-	// Collect qubits above thresholds
 	var above4, above3, above2 []int
 	for _, r := range sorted {
 		pct := r.ReadoutError * 100
@@ -367,9 +348,9 @@ func writeSummary(req models.HeatmapRequest, outPath string) error {
 	}
 
 	var b strings.Builder
-	fmt.Fprintf(&b, "# IBM Torino — Qubit Health Summary\n\n")
+	fmt.Fprintf(&b, "# %s — Qubit Health Summary\n\n", req.ProviderName)
 	fmt.Fprintf(&b, "**Date:** %s\n\n", ts)
-	fmt.Fprintf(&b, "**Backend:** ibm_torino (%d qubits)\n\n", len(req.Reports))
+	fmt.Fprintf(&b, "**Backend:** %s (%d qubits)\n\n", req.ProviderName, len(req.Reports))
 	fmt.Fprintf(&b, "## Overview\n\n")
 	fmt.Fprintf(&b, "| Metric | Value |\n")
 	fmt.Fprintf(&b, "|--------|-------|\n")
@@ -416,8 +397,8 @@ func writeSummary(req models.HeatmapRequest, outPath string) error {
 	return os.WriteFile(outPath, []byte(b.String()), 0o644)
 }
 
-func writeDriftSummary(outPath string) error {
-	days := loadHistoricalData()
+func writeDriftSummary(providerName, outPath string) error {
+	days := loadHistoricalData(providerName)
 	if len(days) == 0 {
 		return fmt.Errorf("no historical data")
 	}
@@ -425,11 +406,10 @@ func writeDriftSummary(outPath string) error {
 	ts := time.Now().Format("2006-01-02 15:04 MST")
 
 	var b strings.Builder
-	fmt.Fprintf(&b, "# IBM Torino — Temporal Drift Summary\n\n")
+	fmt.Fprintf(&b, "# %s — Temporal Drift Summary\n\n", providerName)
 	fmt.Fprintf(&b, "**Generated:** %s\n\n", ts)
 	fmt.Fprintf(&b, "**Window:** %d day(s) (%s → %s)\n\n", len(days), days[0].date, days[len(days)-1].date)
 
-	// Per-day mean error
 	fmt.Fprintf(&b, "## Daily Mean Readout Error\n\n")
 	fmt.Fprintf(&b, "| Date | Mean Error | Worst Qubit | Worst Error |\n")
 	fmt.Fprintf(&b, "|------|-----------|-------------|-------------|\n")
@@ -451,7 +431,6 @@ func writeDriftSummary(outPath string) error {
 		first := days[0]
 		last := days[len(days)-1]
 
-		// Build per-qubit error maps for first and last day
 		firstErr := make(map[int]float64)
 		for _, r := range first.reports {
 			firstErr[r.Index] = r.ReadoutError
@@ -461,13 +440,12 @@ func writeDriftSummary(outPath string) error {
 			lastErr[r.Index] = r.ReadoutError
 		}
 
-		// Compute deltas
 		type delta struct {
-			index      int
-			firstVal   float64
-			lastVal    float64
-			changeAbs  float64
-			changePct  float64
+			index     int
+			firstVal  float64
+			lastVal   float64
+			changeAbs float64
+			changePct float64
 		}
 		var deltas []delta
 		for idx, lv := range lastErr {
@@ -484,24 +462,21 @@ func writeDriftSummary(outPath string) error {
 			deltas = append(deltas, d)
 		}
 
-		// Sort by change (most degraded first)
 		sort.Slice(deltas, func(i, j int) bool {
 			return deltas[i].changeAbs > deltas[j].changeAbs
 		})
 
-		// Degraded qubits (error increased significantly)
 		var degraded, improved []delta
 		for _, d := range deltas {
-			if d.changeAbs > 0.005 { // >0.5% increase
+			if d.changeAbs > 0.005 {
 				degraded = append(degraded, d)
-			} else if d.changeAbs < -0.005 { // >0.5% decrease
+			} else if d.changeAbs < -0.005 {
 				improved = append(improved, d)
 			}
 		}
 
 		fmt.Fprintf(&b, "\n## Trend Analysis (%s → %s)\n\n", first.date, last.date)
 
-		// Overall
 		var firstSum, lastSum float64
 		for _, r := range first.reports {
 			firstSum += r.ReadoutError
@@ -539,7 +514,6 @@ func writeDriftSummary(outPath string) error {
 			fmt.Fprintf(&b, "\n### Most Improved Qubits\n\n")
 			fmt.Fprintf(&b, "| Qubit | %s | %s | Change |\n", first.date, last.date)
 			fmt.Fprintf(&b, "|-------|--------|--------|--------|\n")
-			// Sort improved by most improvement (most negative change)
 			sort.Slice(improved, func(i, j int) bool {
 				return improved[i].changeAbs < improved[j].changeAbs
 			})
@@ -553,13 +527,12 @@ func writeDriftSummary(outPath string) error {
 			}
 		}
 
-		// Most volatile (biggest absolute swings across ALL days)
 		if len(days) >= 3 {
 			type volatility struct {
-				index    int
-				minErr   float64
-				maxErr   float64
-				swing    float64
+				index  int
+				minErr float64
+				maxErr float64
+				swing  float64
 			}
 			volMap := make(map[int]*volatility)
 			for _, day := range days {
@@ -612,9 +585,9 @@ func writeDriftSummary(outPath string) error {
 func categorizeQubits(reports []models.QubitReport) (avoid, unstable, best []models.QubitReport) {
 	for _, r := range reports {
 		switch {
-		case r.ReadoutError >= 0.05:
+		case r.ReadoutError >= ThresholdAvoid:
 			avoid = append(avoid, r)
-		case r.ReadoutError >= 0.02:
+		case r.ReadoutError >= ThresholdUnstable:
 			unstable = append(unstable, r)
 		default:
 			best = append(best, r)
@@ -647,7 +620,6 @@ func renderActionList(reports []models.QubitReport, outPath string) error {
 	unstableStr := intsToString(qubitIndices(unstable))
 	bestStr := intsToString(qubitIndices(best))
 
-	// Measure text to determine row heights
 	tmpDc := gg.NewContext(1, 1)
 	loadFont(tmpDc, 14)
 
@@ -687,7 +659,6 @@ func renderActionList(reports []models.QubitReport, outPath string) error {
 	dc.SetColor(color.White)
 	dc.Clear()
 
-	// Title
 	loadFont(dc, 20)
 	dc.SetColor(color.Black)
 	dc.DrawStringAnchored("DAILY ACTION LIST (DO NOT FLY)", float64(cW)/2, titleH/2, 0.5, 0.5)
@@ -695,7 +666,6 @@ func renderActionList(reports []models.QubitReport, outPath string) error {
 	y := titleH
 	x0 := margin
 
-	// Header
 	dc.SetColor(color.RGBA{R: 235, G: 235, B: 235, A: 255})
 	dc.DrawRectangle(x0, y, tableW, headerH)
 	dc.Fill()
@@ -714,7 +684,6 @@ func renderActionList(reports []models.QubitReport, outPath string) error {
 		cx += colW[i]
 	}
 
-	// Column dividers
 	dc.SetLineWidth(1)
 	cx = x0
 	for i := 0; i <= 3; i++ {
@@ -725,13 +694,11 @@ func renderActionList(reports []models.QubitReport, outPath string) error {
 		}
 	}
 
-	// Row dividers
 	for _, ry := range []float64{y + headerH, y + headerH + avoidH, y + headerH + avoidH + unstableH} {
 		dc.DrawLine(x0, ry, x0+tableW, ry)
 		dc.Stroke()
 	}
 
-	// Data rows
 	type rowDef struct {
 		label  string
 		c      color.RGBA
@@ -747,12 +714,10 @@ func renderActionList(reports []models.QubitReport, outPath string) error {
 
 	ry := y + headerH
 	for _, row := range rows {
-		// Status label
 		loadFont(dc, 16)
 		dc.SetColor(row.c)
 		dc.DrawStringAnchored(row.label, x0+colW[0]/2, ry+row.h/2, 0.5, 0.5)
 
-		// Qubits (wrapped text)
 		loadFont(dc, 13)
 		dc.SetColor(color.Black)
 		ty := ry + pad
@@ -761,7 +726,6 @@ func renderActionList(reports []models.QubitReport, outPath string) error {
 			ty += lineH
 		}
 
-		// Reason
 		loadFont(dc, 14)
 		dc.SetColor(color.Black)
 		dc.DrawStringAnchored(row.reason, x0+colW[0]+colW[1]+colW[2]/2, ry+row.h/2, 0.5, 0.5)
@@ -773,29 +737,27 @@ func renderActionList(reports []models.QubitReport, outPath string) error {
 }
 
 // ---------------------------------------------------------------------------
-// Agent Daily Briefing (one file to rule them all)
+// Agent Daily Briefing
 // ---------------------------------------------------------------------------
 
-func writeAgentBriefing(reports []models.QubitReport, outPath string) error {
+func writeAgentBriefing(req models.HeatmapRequest, outPath string) error {
 	ts := time.Now().Format("2006-01-02 15:04 MST")
-	avoid, unstable, best := categorizeQubits(reports)
+	avoid, unstable, best := categorizeQubits(req.Reports)
 
-	// Stats
 	var sum float64
-	for _, r := range reports {
+	for _, r := range req.Reports {
 		sum += r.ReadoutError
 	}
-	avg := sum / float64(len(reports))
+	avg := sum / float64(len(req.Reports))
 
 	var b strings.Builder
-	fmt.Fprintf(&b, "# Quantum Tide Daily Briefing — IBM Torino\n\n")
+	fmt.Fprintf(&b, "# Quantum Tide Daily Briefing — %s\n\n", req.ProviderName)
 	fmt.Fprintf(&b, "**Generated:** %s\n\n", ts)
-	fmt.Fprintf(&b, "**Backend:** ibm_torino | **Qubits:** %d | **Mean Error:** %.2f%%\n\n", len(reports), avg*100)
+	fmt.Fprintf(&b, "**Backend:** %s | **Qubits:** %d | **Mean Error:** %.2f%%\n\n", req.ProviderName, len(req.Reports), avg*100)
 	fmt.Fprintf(&b, "---\n\n")
 
-	// Action list
 	fmt.Fprintf(&b, "## Action List (Do Not Fly)\n\n")
-	fmt.Fprintf(&b, "### AVOID (%d qubits) — High Persistent Noise (>5%% error)\n\n", len(avoid))
+	fmt.Fprintf(&b, "### AVOID (%d qubits) — High Persistent Noise (>%.0f%% error)\n\n", len(avoid), ThresholdAvoid*100)
 	if len(avoid) > 0 {
 		fmt.Fprintf(&b, "Qubits: %s\n\n", intsToString(qubitIndices(avoid)))
 		fmt.Fprintf(&b, "| Qubit | Error | T1 (µs) | T2 (µs) |\n|-------|-------|---------|--------|\n")
@@ -806,26 +768,26 @@ func writeAgentBriefing(reports []models.QubitReport, outPath string) error {
 			fmt.Fprintf(&b, "| Q%d | %.2f%% | %.1f | %.1f |\n", r.Index, r.ReadoutError*100, r.T1, r.T2)
 		}
 	} else {
-		fmt.Fprintf(&b, "None — all qubits below 5%% error.\n")
+		fmt.Fprintf(&b, "None — all qubits below %.0f%% error.\n", ThresholdAvoid*100)
 	}
 
-	fmt.Fprintf(&b, "\n### UNSTABLE (%d qubits) — Elevated Error (2-5%%)\n\n", len(unstable))
+	fmt.Fprintf(&b, "\n### UNSTABLE (%d qubits) — Elevated Error (%.0f-%.0f%%)\n\n",
+		len(unstable), ThresholdUnstable*100, ThresholdAvoid*100)
 	if len(unstable) > 0 {
 		fmt.Fprintf(&b, "Qubits: %s\n\n", intsToString(qubitIndices(unstable)))
 	} else {
 		fmt.Fprintf(&b, "None.\n")
 	}
 
-	fmt.Fprintf(&b, "\n### BEST REGION (%d qubits) — Stable, Low Error (<2%%)\n\n", len(best))
+	fmt.Fprintf(&b, "\n### BEST REGION (%d qubits) — Stable, Low Error (<%.0f%%)\n\n", len(best), ThresholdUnstable*100)
 	if len(best) > 0 {
 		fmt.Fprintf(&b, "Qubits: %s\n\n", intsToString(qubitIndices(best)))
 	} else {
 		fmt.Fprintf(&b, "None.\n")
 	}
 
-	// Drift section
 	fmt.Fprintf(&b, "\n---\n\n## Temporal Drift\n\n")
-	days := loadHistoricalData()
+	days := loadHistoricalData(req.ProviderName)
 	if len(days) < 2 {
 		fmt.Fprintf(&b, "*Trend analysis requires 2+ days of data.*\n")
 	} else {
@@ -849,7 +811,8 @@ func writeAgentBriefing(reports []models.QubitReport, outPath string) error {
 		fmt.Fprintf(&b, "- Qubits improved (>0.5pp decrease): %d\n", improved)
 	}
 
-	fmt.Fprintf(&b, "\n---\n\n*Files: torino_spatial_map.png, torino_drift_map.png, torino_action_list.png*\n")
+	fmt.Fprintf(&b, "\n---\n\n*Files: %s_spatial_map.png, %s_drift_map.png, %s_action_list.png*\n",
+		req.ProviderName, req.ProviderName, req.ProviderName)
 
 	return os.WriteFile(outPath, []byte(b.String()), 0o644)
 }
@@ -984,14 +947,23 @@ func drawVerticalLegend(dc *gg.Context, lLeft, lRight, lTop, lBottom float64) {
 	dc.Pop()
 }
 
+// loadFont tries a set of common system font paths and falls back to basicfont.
 func loadFont(dc *gg.Context, size float64) {
 	for _, p := range []string{
+		// macOS
 		"/System/Library/Fonts/Supplemental/Arial.ttf",
-		"/System/Library/Fonts/Supplemental/Helvetica.ttc",
 		"/Library/Fonts/Arial.ttf",
+		// Debian / Ubuntu
+		"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+		"/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+		// Arch / Fedora
+		"/usr/share/fonts/TTF/DejaVuSans.ttf",
+		"/usr/share/fonts/dejavu/DejaVuSans.ttf",
 	} {
 		if err := dc.LoadFontFace(p, size); err == nil {
 			return
 		}
 	}
+	// Guaranteed fallback: embedded bitmap font, no external files needed.
+	dc.SetFontFace(basicfont.Face7x13)
 }

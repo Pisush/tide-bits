@@ -18,14 +18,13 @@ import (
 
 // Broadcaster generates the HTML daily report and optionally sends it via email.
 // Reads output files from disk — call after the Cartographer pipeline completes.
-func Broadcaster() {
+func Broadcaster(providerName string) {
 	date := time.Now().Format("2006-01-02")
 
-	// Load today's qubit reports
-	summaryPath := filepath.Join("quantum_weather_data", date+"_summary.json")
+	summaryPath := filepath.Join("quantum_weather_data", providerName, date+"_summary.json")
 	raw, err := os.ReadFile(summaryPath)
 	if err != nil {
-		log.Printf("Broadcaster: no summary data for %s, skipping", date)
+		log.Printf("Broadcaster: no summary data for %s/%s, skipping", providerName, date)
 		return
 	}
 	var reports []models.QubitReport
@@ -34,8 +33,7 @@ func Broadcaster() {
 		return
 	}
 
-	// Generate HTML report
-	html := buildHTMLReport(date, reports)
+	html := buildHTMLReport(providerName, date, reports)
 	htmlPath := filepath.Join("output", "daily_report.html")
 	if err := os.WriteFile(htmlPath, []byte(html), 0o644); err != nil {
 		log.Printf("Broadcaster: failed to write HTML report: %v", err)
@@ -43,7 +41,6 @@ func Broadcaster() {
 		log.Printf("Broadcaster: HTML report saved → %s", htmlPath)
 	}
 
-	// Send email if SMTP is configured
 	smtpUser := os.Getenv("SMTP_USER")
 	smtpPass := os.Getenv("SMTP_PASS")
 	emailTo := os.Getenv("EMAIL_TO")
@@ -63,42 +60,34 @@ func Broadcaster() {
 		smtpPort = "587"
 	}
 
-	subject := fmt.Sprintf("Daily Tide Report: IBM Torino (%s)", date)
-	if err := sendEmail(smtpHost, smtpPort, smtpUser, smtpPass, emailTo, subject, date, reports); err != nil {
+	subject := fmt.Sprintf("Daily Tide Report: %s (%s)", providerName, date)
+	if err := sendEmail(smtpHost, smtpPort, smtpUser, smtpPass, emailTo, subject, providerName, date, reports); err != nil {
 		log.Printf("Broadcaster: email send failed: %v", err)
 	} else {
 		log.Printf("Broadcaster: email sent to %s", emailTo)
 	}
 }
 
-func buildHTMLReport(date string, reports []models.QubitReport) string {
-	// Categorize qubits
-	var avoid, unstable, best []int
-	for _, r := range reports {
-		switch {
-		case r.ReadoutError >= 0.05:
-			avoid = append(avoid, r.Index)
-		case r.ReadoutError >= 0.02:
-			unstable = append(unstable, r.Index)
-		default:
-			best = append(best, r.Index)
-		}
-	}
-	sort.Ints(avoid)
-	sort.Ints(unstable)
-	sort.Ints(best)
+func buildHTMLReport(providerName, date string, reports []models.QubitReport) string {
+	avoid, unstable, best := categorizeQubits(reports)
 
-	// Stats
+	avoidIdx := qubitIndices(avoid)
+	unstableIdx := qubitIndices(unstable)
+	bestIdx := qubitIndices(best)
+
+	sort.Ints(avoidIdx)
+	sort.Ints(unstableIdx)
+	sort.Ints(bestIdx)
+
 	var sum float64
 	for _, r := range reports {
 		sum += r.ReadoutError
 	}
 	avg := sum / float64(len(reports))
 
-	// Read images as base64 for inline display
-	spatialB64 := fileToBase64("output/torino_spatial_map.png")
-	driftB64 := fileToBase64("output/torino_drift_map.png")
-	actionB64 := fileToBase64("output/torino_action_list.png")
+	spatialB64 := fileToBase64(filepath.Join("output", providerName+"_spatial_map.png"))
+	driftB64 := fileToBase64(filepath.Join("output", providerName+"_drift_map.png"))
+	actionB64 := fileToBase64(filepath.Join("output", providerName+"_action_list.png"))
 
 	formatList := func(ids []int) string {
 		strs := make([]string, len(ids))
@@ -135,13 +124,12 @@ img { max-width: 100%; height: auto; border-radius: 6px; margin: 12px 0; }
 `)
 
 	fmt.Fprintf(&b, `<div class="header">
-<h1>Daily Tide Report: IBM Torino</h1>
+<h1>Daily Tide Report: %s</h1>
 <p>%s</p>
 </div>
 <div class="body">
-`, date)
+`, providerName, date)
 
-	// Stats bar
 	fmt.Fprintf(&b, `<div class="stats">
 <div class="stat"><div class="val">%d</div><div class="label">Total Qubits</div></div>
 <div class="stat"><div class="val">%.2f%%</div><div class="label">Mean Error</div></div>
@@ -150,33 +138,29 @@ img { max-width: 100%; height: auto; border-radius: 6px; margin: 12px 0; }
 </div>
 `, len(reports), avg*100, len(avoid), len(best))
 
-	// Spatial heatmap
 	if spatialB64 != "" {
 		fmt.Fprintf(&b, `<h2>Spatial Heatmap</h2>
 <img src="data:image/png;base64,%s" alt="Spatial Heatmap">
 `, spatialB64)
 	}
 
-	// Action list
 	b.WriteString(`<h2>Daily Action List (Do Not Fly)</h2>
 <table>
 <tr><th>Status</th><th>Qubits</th><th>Reason</th></tr>
 `)
-	fmt.Fprintf(&b, `<tr><td class="avoid">AVOID</td><td>%s</td><td>High Persistent Noise (&gt;5%% error)</td></tr>
-`, formatList(avoid))
-	fmt.Fprintf(&b, `<tr><td class="unstable">UNSTABLE</td><td>%s</td><td>Elevated Error (2-5%%)</td></tr>
-`, formatList(unstable))
-	fmt.Fprintf(&b, `<tr><td class="best">BEST REGION</td><td>%s</td><td>Stable, Low Error (&lt;2%%)</td></tr>
-`, formatList(best))
+	fmt.Fprintf(&b, `<tr><td class="avoid">AVOID</td><td>%s</td><td>High Persistent Noise (&gt;%.0f%% error)</td></tr>
+`, formatList(avoidIdx), ThresholdAvoid*100)
+	fmt.Fprintf(&b, `<tr><td class="unstable">UNSTABLE</td><td>%s</td><td>Elevated Error (%.0f-%.0f%%)</td></tr>
+`, formatList(unstableIdx), ThresholdUnstable*100, ThresholdAvoid*100)
+	fmt.Fprintf(&b, `<tr><td class="best">BEST REGION</td><td>%s</td><td>Stable, Low Error (&lt;%.0f%%)</td></tr>
+`, formatList(bestIdx), ThresholdUnstable*100)
 	b.WriteString("</table>\n")
 
-	// Action list PNG
 	if actionB64 != "" {
 		fmt.Fprintf(&b, `<img src="data:image/png;base64,%s" alt="Action List">
 `, actionB64)
 	}
 
-	// Drift map
 	if driftB64 != "" {
 		fmt.Fprintf(&b, `<h2>Temporal Drift Heatmap</h2>
 <img src="data:image/png;base64,%s" alt="Temporal Drift">
@@ -190,21 +174,19 @@ img { max-width: 100%; height: auto; border-radius: 6px; margin: 12px 0; }
 	return b.String()
 }
 
-func sendEmail(host, port, user, pass, to, subject, date string, reports []models.QubitReport) error {
+func sendEmail(host, port, user, pass, to, subject, providerName, date string, reports []models.QubitReport) error {
 	addr := host + ":" + port
 	auth := smtp.PlainAuth("", user, pass, host)
 
 	boundary := fmt.Sprintf("quantum-tide-%d", time.Now().UnixNano())
 
-	// Load images for CID embedding
 	images := map[string]string{
-		"spatial_map": "output/torino_spatial_map.png",
-		"drift_map":   "output/torino_drift_map.png",
-		"action_list": "output/torino_action_list.png",
+		"spatial_map": filepath.Join("output", providerName+"_spatial_map.png"),
+		"drift_map":   filepath.Join("output", providerName+"_drift_map.png"),
+		"action_list": filepath.Join("output", providerName+"_action_list.png"),
 	}
 
-	// Build HTML with CID references instead of data URIs
-	htmlBody := buildEmailHTML(date, reports)
+	htmlBody := buildEmailHTML(providerName, date, reports)
 
 	var msg bytes.Buffer
 	fmt.Fprintf(&msg, "From: Quantum Tide <%s>\r\n", user)
@@ -214,13 +196,11 @@ func sendEmail(host, port, user, pass, to, subject, date string, reports []model
 	fmt.Fprintf(&msg, "Content-Type: multipart/related; boundary=\"%s\"\r\n", boundary)
 	fmt.Fprintf(&msg, "\r\n")
 
-	// HTML part
 	fmt.Fprintf(&msg, "--%s\r\n", boundary)
 	fmt.Fprintf(&msg, "Content-Type: text/html; charset=\"utf-8\"\r\n")
 	fmt.Fprintf(&msg, "\r\n")
 	fmt.Fprintf(&msg, "%s\r\n", htmlBody)
 
-	// Image parts
 	for cid, path := range images {
 		data, err := os.ReadFile(path)
 		if err != nil {
@@ -248,22 +228,12 @@ func sendEmail(host, port, user, pass, to, subject, date string, reports []model
 	return smtp.SendMail(addr, auth, user, []string{to}, msg.Bytes())
 }
 
-// buildEmailHTML is like buildHTMLReport but uses CID references for images.
-func buildEmailHTML(date string, reports []models.QubitReport) string {
-	var avoid, unstable, best []int
-	for _, r := range reports {
-		switch {
-		case r.ReadoutError >= 0.05:
-			avoid = append(avoid, r.Index)
-		case r.ReadoutError >= 0.02:
-			unstable = append(unstable, r.Index)
-		default:
-			best = append(best, r.Index)
-		}
-	}
-	sort.Ints(avoid)
-	sort.Ints(unstable)
-	sort.Ints(best)
+func buildEmailHTML(providerName, date string, reports []models.QubitReport) string {
+	avoid, unstable, best := categorizeQubits(reports)
+
+	avoidIdx := qubitIndices(avoid)
+	unstableIdx := qubitIndices(unstable)
+	bestIdx := qubitIndices(best)
 
 	formatList := func(ids []int) string {
 		strs := make([]string, len(ids))
@@ -278,7 +248,7 @@ func buildEmailHTML(date string, reports []models.QubitReport) string {
 <div style="max-width:900px;margin:0 auto;background:white;border-radius:12px;overflow:hidden;">
 <div style="background:#1a1a2e;color:white;padding:24px 30px;">
 `)
-	fmt.Fprintf(&b, `<h1 style="margin:0;font-size:22px;">Daily Tide Report: IBM Torino (%s)</h1>`, date)
+	fmt.Fprintf(&b, `<h1 style="margin:0;font-size:22px;">Daily Tide Report: %s (%s)</h1>`, providerName, date)
 	b.WriteString(`</div><div style="padding:24px 30px;">`)
 
 	b.WriteString(`<h2>Spatial Heatmap</h2><img src="cid:spatial_map" style="max-width:100%;">`)
@@ -292,15 +262,15 @@ func buildEmailHTML(date string, reports []models.QubitReport) string {
 	fmt.Fprintf(&b, `<tr><td style="border:1px solid #ddd;padding:10px;color:#cc0000;font-weight:bold;">AVOID</td>
 <td style="border:1px solid #ddd;padding:10px;font-size:13px;">%s</td>
 <td style="border:1px solid #ddd;padding:10px;">High Persistent Noise</td></tr>
-`, formatList(avoid))
+`, formatList(avoidIdx))
 	fmt.Fprintf(&b, `<tr><td style="border:1px solid #ddd;padding:10px;color:#cc8800;font-weight:bold;">UNSTABLE</td>
 <td style="border:1px solid #ddd;padding:10px;font-size:13px;">%s</td>
-<td style="border:1px solid #ddd;padding:10px;">Elevated Error (2-5%%)</td></tr>
-`, formatList(unstable))
+<td style="border:1px solid #ddd;padding:10px;">Elevated Error (%.0f-%.0f%%)</td></tr>
+`, formatList(unstableIdx), ThresholdUnstable*100, ThresholdAvoid*100)
 	fmt.Fprintf(&b, `<tr><td style="border:1px solid #ddd;padding:10px;color:#008800;font-weight:bold;">BEST REGION</td>
 <td style="border:1px solid #ddd;padding:10px;font-size:13px;">%s</td>
 <td style="border:1px solid #ddd;padding:10px;">Stable, Low Error</td></tr>
-`, formatList(best))
+`, formatList(bestIdx))
 	b.WriteString(`</table>`)
 
 	b.WriteString(`<h2>Temporal Drift</h2><img src="cid:drift_map" style="max-width:100%;">`)

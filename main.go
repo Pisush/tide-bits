@@ -9,49 +9,65 @@ import (
 
 	"github.com/natalie/tide-bits/agents"
 	"github.com/natalie/tide-bits/models"
+	"github.com/natalie/tide-bits/providers"
+	ibmprovider "github.com/natalie/tide-bits/providers/ibm"
 )
 
 func main() {
-	watch := flag.Bool("watch", false, "Run continuously on a schedule")
-	interval := flag.Duration("interval", 6*time.Hour, "How often to fetch (e.g. 6h, 1h, 30m)")
+	watch        := flag.Bool("watch", false, "Run continuously on a schedule")
+	interval     := flag.Duration("interval", 6*time.Hour, "How often to fetch (e.g. 6h, 1h, 30m)")
+	providerFlag := flag.String("provider", "ibm", "Quantum provider to use (currently: ibm)")
 	flag.Parse()
 
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmsgprefix)
 
-	apiKey := os.Getenv("IBM_QUANTUM_TOKEN")
-	crn := os.Getenv("IBM_QUANTUM_CRN")
-
-	if apiKey == "" || crn == "" {
-		log.Fatal("Set IBM_QUANTUM_TOKEN and IBM_QUANTUM_CRN environment variables")
+	p, err := buildProvider(*providerFlag)
+	if err != nil {
+		log.Fatalf("Provider setup: %v", err)
 	}
 
 	if !*watch {
-		// Single run
-		log.Println("Quantum Tide — IBM Torino Weather Report")
+		log.Printf("Quantum Tide — %s Weather Report", p.Name())
 		log.Println("========================================")
-		ok := runPipeline(apiKey, crn)
+		ok := runPipeline(p)
 		if !ok {
 			os.Exit(1)
 		}
 		return
 	}
 
-	// Watch mode — run immediately, then on a ticker
-	log.Printf("Quantum Tide — watch mode (every %s)", *interval)
+	log.Printf("Quantum Tide — watch mode (every %s, provider: %s)", *interval, p.Name())
 	log.Println("========================================")
 
-	runPipeline(apiKey, crn)
+	runPipeline(p)
 
 	ticker := time.NewTicker(*interval)
 	defer ticker.Stop()
 
 	for t := range ticker.C {
 		log.Printf("Tick at %s — starting pipeline", t.Format(time.DateTime))
-		runPipeline(apiKey, crn)
+		runPipeline(p)
 	}
 }
 
-func runPipeline(apiKey, crn string) bool {
+// buildProvider resolves the -provider flag to a Provider implementation.
+// Add new providers here as they are implemented.
+func buildProvider(name string) (providers.Provider, error) {
+	switch name {
+	case "ibm":
+		apiKey := os.Getenv("IBM_QUANTUM_TOKEN")
+		crn := os.Getenv("IBM_QUANTUM_CRN")
+		if apiKey == "" || crn == "" {
+			log.Fatal("IBM provider requires IBM_QUANTUM_TOKEN and IBM_QUANTUM_CRN environment variables")
+		}
+		return ibmprovider.New(apiKey, crn), nil
+	default:
+		log.Fatalf("Unknown provider %q — available providers: ibm", name)
+		return nil, nil // unreachable; log.Fatalf exits
+	}
+}
+
+func runPipeline(p providers.Provider) bool {
 	scoutToScribe := make(chan models.RawCalibrationData, 1)
 	scribeToCartographer := make(chan models.HeatmapRequest, 1)
 
@@ -72,14 +88,14 @@ func runPipeline(apiKey, crn string) bool {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		agents.Scout(apiKey, crn, scoutToScribe)
+		agents.Scout(p, scoutToScribe)
 	}()
 
 	wg.Wait()
 
-	if _, err := os.Stat("output/torino_spatial_map.png"); err == nil {
-		// Pipeline succeeded — broadcast (HTML report + optional email)
-		agents.Broadcaster()
+	successFile := "output/" + p.Name() + "_spatial_map.png"
+	if _, err := os.Stat(successFile); err == nil {
+		agents.Broadcaster(p.Name())
 		log.Println("Pipeline complete!")
 		return true
 	}

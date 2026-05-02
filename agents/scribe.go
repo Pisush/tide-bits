@@ -21,7 +21,8 @@ func Scribe(in <-chan models.RawCalibrationData, out chan<- models.HeatmapReques
 	}
 
 	date := time.Now().Format("2006-01-02")
-	dir := "quantum_weather_data"
+	// Each provider gets its own subdirectory so snapshots never mix.
+	dir := filepath.Join("quantum_weather_data", data.ProviderName)
 
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		log.Printf("Scribe: failed to create data dir: %v", err)
@@ -36,7 +37,7 @@ func Scribe(in <-chan models.RawCalibrationData, out chan<- models.HeatmapReques
 	}
 	log.Printf("Scribe: saved raw calibration data → %s (%d bytes)", rawPath, len(data.RawJSON))
 
-	// Save flattened summary
+	// Save flattened summary (used by Cartographer for drift history)
 	summaryPath := filepath.Join(dir, date+"_summary.json")
 	summaryJSON, err := json.MarshalIndent(data.Reports, "", "  ")
 	if err != nil {
@@ -50,9 +51,10 @@ func Scribe(in <-chan models.RawCalibrationData, out chan<- models.HeatmapReques
 	log.Printf("Scribe: saved qubit summary → %s (%d qubits)", summaryPath, len(data.Reports))
 
 	out <- models.HeatmapRequest{
-		Date:     date,
-		JSONPath: rawPath,
-		Reports:  data.Reports,
+		ProviderName: data.ProviderName,
+		Date:         date,
+		JSONPath:     rawPath,
+		Reports:      data.Reports,
 	}
 	log.Println("Scribe: heatmap request sent to Cartographer")
 }
