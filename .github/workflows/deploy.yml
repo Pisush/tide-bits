@@ -1,0 +1,72 @@
+name: Deploy Quantum Tide Report
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # every 6 hours
+  workflow_dispatch:         # manual trigger from the Actions tab
+  push:
+    branches: [main]         # rebuild on code changes
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one deployment at a time; don't cancel in-progress runs.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: true
+
+      # Restore the rolling 7-day snapshot history so the drift map renders.
+      # The cache key changes each run so a new entry is saved every time;
+      # restore-keys picks up the most recent one when the exact key misses.
+      # If the cache is ever evicted the tool starts fresh gracefully.
+      - name: Restore historical snapshot data
+        uses: actions/cache@v4
+        with:
+          path: quantum_weather_data
+          key: quantum-data-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: quantum-data-${{ runner.os }}-
+
+      - name: Install fonts
+        run: sudo apt-get install -y fonts-liberation
+
+      - name: Fetch calibration data and build report
+        env:
+          IBM_QUANTUM_TOKEN: ${{ secrets.IBM_QUANTUM_TOKEN }}
+          IBM_QUANTUM_CRN: ${{ secrets.IBM_QUANTUM_CRN }}
+        run: go run . -provider ibm
+
+      # The HTML report embeds all three PNGs as base64, so a single file is
+      # all GitHub Pages needs to serve.
+      - name: Prepare site directory
+        run: |
+          mkdir -p _site
+          cp output/daily_report.html _site/index.html
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
